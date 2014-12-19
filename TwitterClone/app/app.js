@@ -9,8 +9,8 @@ var assert = require('assert');
 var mongo = require('mongodb').MongoClient;
 var AM = require('./account-manager.js');
 var kafka = require('kafka-node');
-
 var app = module.exports = express();
+var routes = require('./routes.js');
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -82,10 +82,13 @@ app.use(function(err, req, res, next) {
 mongo.connect('mongodb://localhost:27017/twitter', function(err, db) {
     
     // TODO: error handling
-
+    assert(!err);
     console.log("connected to MongoDB");
-    app.db = db;
-
+    app.users  = db.collection('users');
+    app.users.findOne({username:'KayteeeeGaga'},function(err, user) {
+        if (err) return console.error(err);
+        console.log(user);
+    });
     // var client = new kafka.Client('localhost:2181');
     // app.producer = new kafka.Producer(client);
 

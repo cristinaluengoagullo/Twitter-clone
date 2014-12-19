@@ -2,14 +2,18 @@ var fs = require('fs');
 var byline = require('byline');
 var mongo = require('mongodb').MongoClient;
 var assert = require('assert');
+var AM = require('./account-manager.js');
+var noop = function() {};
 
 mongo.connect('mongodb://localhost:27017/twitter', function(err, db) {
 
   assert.equal(null, err);
   var lineCount     = 0;
   var readAllLines  = false;
+  users  = db.collection('users');
 
   // TODO: empty the database
+  users.remove({}, noop);
 
   var semaphore = 2;
   function callback(err) {
@@ -24,7 +28,7 @@ mongo.connect('mongodb://localhost:27017/twitter', function(err, db) {
     try {
       lineCount++;
       var obj = JSON.parse(line);
-      console.log(obj);
+      //console.log(obj.username);
       // NOTE: obj represents a user and contains three fields:
       // obj.username: the username
       // obj.name: the full name
@@ -36,12 +40,20 @@ mongo.connect('mongodb://localhost:27017/twitter', function(err, db) {
       // decrement the lineCount variable after every insertion
       // if lineCount is equal to zero and readAllLines is true, close db connection
       // using db.close()
+      AM.addNewAccount(obj, users, function()
+      {
+	console.log(users.findOne({username:'RuivaSz_'}));
+        if (--lineCount === 0 && readAllLines) {
+          // we've read and inserted all lines
+          db.close();
+      }
+      });
     } catch (err) {
       console.log("Error:", err);
     }
   });
-  u.on('end', callback);
 
+  u.on('end', callback);
 
   var t = byline(fs.createReadStream(__dirname + '/sample.json'));
 
@@ -49,7 +61,7 @@ mongo.connect('mongodb://localhost:27017/twitter', function(err, db) {
     try {
       lineCount++;
       var obj = JSON.parse(line);
-      console.log(obj);
+      //console.log(obj);
       // NOTE: obj represents a tweet and contains three fields:
       // obj.created_at: UTC time when this tweet was created
       // obj.text: The actual UTF-8 text of the tweet
@@ -64,6 +76,4 @@ mongo.connect('mongodb://localhost:27017/twitter', function(err, db) {
     }
   });
   t.on('end', callback);
-
-
 });
