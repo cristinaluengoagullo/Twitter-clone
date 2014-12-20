@@ -157,7 +157,12 @@ router.get('/usr/:username/follow', function(req, res) {
 });
 
 router.get('/usr/:username/unfollow', function(req, res) {
-
+    console.log(req.params.username);
+    app.following.update({username: req.session.user.username}, {$pull: {following: req.params.username}}, function(err){
+	/*var o = {message: "OK", arr:[req.params.username]}
+        res.send(JSON.stringify(o));*/
+    });
+    res.redirect('/usr/' + req.params.username);
 });
 
 ////////////////////////////////////////////////////////////////////////////////
