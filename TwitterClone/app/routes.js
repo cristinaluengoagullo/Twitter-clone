@@ -91,6 +91,15 @@ router.post('/logout', function(req, res) {
 router.get('/usr/:username', function(req, res) {
     // TODO: render user req.params.username profile (profile.ejs)
     var resTweets = []
+    var rend = function(follow) {
+	    render(res, {
+		title: 'Profile:',
+		partial: 'profile',
+		tweets: resTweets,
+		username: req.session.user.username,
+		following: follow
+	    });
+    }
     app.tweets.find({username: req.params.username}).toArray(function(err, tweets) {
          tweets = setDisplayDate(tweets);
          tweets.forEach(function(tweet) {
@@ -98,28 +107,15 @@ router.get('/usr/:username', function(req, res) {
          });
     });
 
-/*    if (req.params.username != req.session.user.username) {
+    if (req.params.username != req.session.user.username) {
 	app.following.findOne({username: req.session.user.username}, function(err, user) {
-	    var followButton = false;
-	    if (user != null && user.following.indexOf(req.params.username)){
-		
+	    if (user != null && user.following.indexOf(req.params.username) >= 0){
+		rend(true);
 	    }
-	    render(res, {
-		title: 'Profile:',
-		partial: 'profile',
-		tweets: resTweets,
-		username: req.session.user.username,
-		following: followButton
-	    });
+	    else rend(false);
 	});
-    }*/
-    render(res, {
-	title: 'Profile:',
-	partial: 'profile',
-	tweets: resTweets,
-	username: req.session.user.username,
-	following: false
-    });
+    }
+    else rend(false);
 });
 
 router.get('/usr/:username/following', function(req, res) {
@@ -154,6 +150,7 @@ router.get('/usr/:username/followers', function(req, res) {
 
 router.get('/usr/:username/follow', function(req, res) {
     // TODO
+    //app.following({username: req.session.user.username}, {$addToSet: {following: req.params.username}});
 });
 
 router.get('/usr/:username/unfollow', function(req, res) {
