@@ -2,7 +2,7 @@
 	<h1>Create a Tweet</h1>
 	<p>
 		<form action="/newTweet" id="newTweet">
-			<textarea name="text" class="ribbitText"></textarea>
+			<textarea name="text" id = "text" class="ribbitText"></textarea>
 			<input type="submit" value="Tweet!">
 		</form>
 		<div id="result"></div>
@@ -20,6 +20,18 @@ $( "#newTweet" ).submit(function( event ) {
     url = $form.attr( "action" );
  
   // TODO: Implement Ajax request
+  // Send the data using post
+  var posting = $.post( url, { text: text }); 
+
+  // Put the results in a div
+  posting.done(function( o ) {
+    $('textarea').val('')
+    //window.location.replace(o.url);
+  })
+  .fail(function( h ) {
+  	var o = h.responseJSON;
+    $( "#message" ).empty().append( o.message );
+  });
 });
 </script>
 <div id="ribbits" class="panel left">
@@ -37,3 +49,4 @@ $( "#newTweet" ).submit(function( event ) {
 	    </div>
     <% } %>
 </div>
+

@@ -85,10 +85,13 @@ mongo.connect('mongodb://localhost:27017/twitter', function(err, db) {
     assert(!err);
     console.log("connected to MongoDB");
     app.users  = db.collection('users');
-    app.users.findOne({username:'KayteeeeGaga'},function(err, user) {
+    app.tweets  = db.collection('tweets');
+    app.following  = db.collection('following');
+    app.followers  = db.collection('followers');
+/*    app.following.findOne({username:'KayteeeeGaga'},function(err, tweet) {
         if (err) return console.error(err);
-        console.log(user);
-    });
+        console.log(tweet);
+    });*/
     // var client = new kafka.Client('localhost:2181');
     // app.producer = new kafka.Producer(client);
 

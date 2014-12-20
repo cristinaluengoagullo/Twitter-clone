@@ -31,8 +31,26 @@ function render(res, dict) {
 // Login page
 
 router.get('/', function(req, res) {
-    // TODO: Render login page unless the user is already logged in.
-    // In this case, redirect the user to /home
+
+    // check if the user's credentials are saved in a cookie
+    if (!req.session.user) {
+        return res.render('login', {
+            message: 'Hello - Please Login To Your Account' });
+    }
+
+    // attempt automatic login
+    AM.autoLogin(
+        req.session.user.username,
+        req.session.user.pass,
+        app.users,
+    function(user) {
+        if (!user)
+            return res.render('login', {
+                title: 'Hello - Please Login To Your Account' });
+
+        req.session.user = user;
+        res.redirect('/home');
+    });
 });
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -40,6 +58,26 @@ router.get('/', function(req, res) {
 
 router.post('/validate', function(req, res) {
     // TODO: Implement user login given req.param('username'), req.param('password')
+    AM.manualLogin(
+        req.param('username'),
+        req.param('password'),
+        app.users,
+    function(err, user) {
+        //assert(!err);
+        res.setHeader('content-type', 'application/json');
+
+        if (!user) {
+            res.statusCode = 403;
+            var o = {message: err.message};
+            res.send(JSON.stringify(o));
+            return;
+        }
+
+        req.session.user = user;
+        var fullUrl = req.protocol + '://' + req.get('host') + '/home';
+        var o = {message: 'OK', url: fullUrl}
+        res.send(JSON.stringify(o));
+    });
 });
 
 router.post('/logout', function(req, res) {
@@ -52,14 +90,66 @@ router.post('/logout', function(req, res) {
 
 router.get('/usr/:username', function(req, res) {
     // TODO: render user req.params.username profile (profile.ejs)
+    var resTweets = []
+    app.tweets.find({username: req.params.username}).toArray(function(err, tweets) {
+         tweets = setDisplayDate(tweets);
+         tweets.forEach(function(tweet) {
+              resTweets.push(tweet);
+         });
+    });
+
+/*    if (req.params.username != req.session.user.username) {
+	app.following.findOne({username: req.session.user.username}, function(err, user) {
+	    var followButton = false;
+	    if (user != null && user.following.indexOf(req.params.username)){
+		
+	    }
+	    render(res, {
+		title: 'Profile:',
+		partial: 'profile',
+		tweets: resTweets,
+		username: req.session.user.username,
+		following: followButton
+	    });
+	});
+    }*/
+    render(res, {
+	title: 'Profile:',
+	partial: 'profile',
+	tweets: resTweets,
+	username: req.session.user.username,
+	following: false
+    });
 });
 
 router.get('/usr/:username/following', function(req, res) {
     // TODO: render users following user req.params.username
+    app.following.findOne({username: req.params.username}, function(err, user) {
+	var userFollowing = [];
+	if (user != null){
+	    userFollowing = user.following;
+	}
+	render(res, {
+            title: 'Following:',
+            partial: 'follow',
+            follow: userFollowing
+        });
+    });
 });
 
 router.get('/usr/:username/followers', function(req, res) {
     // TODO: render users followed by user req.params.username
+    app.followers.findOne({username: req.params.username}, function(err, user) {
+	var userFollowers = [];
+	if (user != null){
+	    userFollowers = user.followers;
+	}
+	render(res, {
+            title: 'Followers:',
+            partial: 'follow',
+            follow: userFollowers
+        });
+    });
 });
 
 router.get('/usr/:username/follow', function(req, res) {
@@ -79,13 +169,44 @@ router.get('/home', function(req, res) {
         res.redirect('/');
         return;
     }
-    // TODO: render user timeline
+
+   var resTweets = [];
+   app.following.findOne({username: req.session.user.username},function(err, user) {
+        if (err) return console.error(err);
+        app.tweets.find({username: {$in: user.following}}).toArray(function(err, tweets) {
+            tweets = setDisplayDate(tweets);
+            tweets.forEach(function(tweet) {
+                resTweets.push(tweet);
+            });
+        });
+   });
+   render(res, {
+       title: 'Timeline:',
+       partial: 'home',
+       tweets: resTweets
+   });
 });
 
 ////////////////////////////////////////////////////////////////////////////////
 // User Timeline
 router.post('/newTweet', function(req, res) {
-    // TODO: accept and save new Tweet
+    if (req.session.user == null) {
+        // if user is not logged-in redirect back to login page
+        res.redirect('/');
+        return;
+    }
+    var currentdate = new Date(); 
+    var datetime = "Last Sync: " + currentdate.getDate() + "/"
+                + (currentdate.getMonth()+1)  + "/" 
+                + currentdate.getFullYear() + " @ "  
+                + currentdate.getHours() + ":"  
+                + currentdate.getMinutes() + ":" 
+                + currentdate.getSeconds();
+    var tweet = {"created at": datetime, "text": req.param('text'), "name": req.session.user.name, "username": req.session.user.username};
+    app.tweets.insert(tweet, {safe: true}, function(){
+        var o = {message: "OK", arr:tweet}
+        res.send(JSON.stringify(o));
+    }); 
 });
 
 ////////////////////////////////////////////////////////////////////////////////

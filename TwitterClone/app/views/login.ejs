@@ -43,13 +43,23 @@ $( "#validate" ).submit(function( event ) {
     username = $form.find( "input[name='user']" ).val(),
     password = $form.find( "input[name='pass']" ).val(),
     url = $form.attr( "action" );
+
+  // Send the data using post
+  var posting = $.post( url, { username: username, password: password });
  
-  // TODO: Implement Ajax request
+  // Put the results in a div
+  posting.done(function( o ) {
+      window.location.replace(o.url);
+  })
+  .fail(function( h ) {
+  	var o = h.responseJSON;
+    $( "#message" ).empty().append( o.message );
+  });
 });
 </script>
 	<footer>
 		<div class="wrapper">
-			A Twitter Clone by YOUR NAME HERE
+			A Twitter Clone by Cristina Luengo Agullo
 		</div>
 	</footer>
 </body>

@@ -11,9 +11,15 @@ mongo.connect('mongodb://localhost:27017/twitter', function(err, db) {
   var lineCount     = 0;
   var readAllLines  = false;
   users  = db.collection('users');
+  tweets  = db.collection('tweets');
+  following = db.collection('following');
+  followees = db.collection('followees');
 
   // TODO: empty the database
   users.remove({}, noop);
+  tweets.remove({}, noop);
+  following.remove({}, noop);
+  followees.remove({}, noop);
 
   var semaphore = 2;
   function callback(err) {
@@ -40,14 +46,18 @@ mongo.connect('mongodb://localhost:27017/twitter', function(err, db) {
       // decrement the lineCount variable after every insertion
       // if lineCount is equal to zero and readAllLines is true, close db connection
       // using db.close()
-      AM.addNewAccount(obj, users, function()
+      var user = {"username": obj.username, "name": obj.name};
+      var userFollowing = {"username": obj.username, "following": obj.following};
+      var userFollowees = {"username": obj.username, "followers": obj.followers};  
+      AM.addNewAccount(user, users, function()
       {
-	console.log(users.findOne({username:'RuivaSz_'}));
         if (--lineCount === 0 && readAllLines) {
           // we've read and inserted all lines
           db.close();
       }
       });
+      following.insert(userFollowing, {safe: true}, function(){});  
+      followees.insert(userFollowees, {safe: true}, function(){});  
     } catch (err) {
       console.log("Error:", err);
     }
@@ -70,7 +80,14 @@ mongo.connect('mongodb://localhost:27017/twitter', function(err, db) {
       // TODO: load the tweet into the database
       // decrement the lineCount variable after every insertion
       // if lineCount is equal to zero and readAllLines is true, close db connection
-      // using db.close()      
+      // using db.close()  
+      tweets.insert(obj, {safe: true}, function()
+      {
+        if (--lineCount === 0 && readAllLines) {
+          // we've read and inserted all lines
+          db.close();
+      }
+      });  
     } catch (err) {
       console.log("Error:", err);
     }
