@@ -157,7 +157,7 @@ router.get('/usr/:username/follow', function(req, res) {
 });
 
 router.get('/usr/:username/unfollow', function(req, res) {
-    // TODO
+
 });
 
 ////////////////////////////////////////////////////////////////////////////////
