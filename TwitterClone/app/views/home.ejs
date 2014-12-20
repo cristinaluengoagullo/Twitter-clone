@@ -25,7 +25,8 @@ $( "#newTweet" ).submit(function( event ) {
 
   // Put the results in a div
   posting.done(function( o ) {
-    $('textarea').val('')
+    $('textarea').val('');
+    confirm("Ribbit! Successful tweet!");
     //window.location.replace(o.url);
   })
   .fail(function( h ) {

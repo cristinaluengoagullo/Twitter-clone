@@ -88,7 +88,7 @@ mongo.connect('mongodb://localhost:27017/twitter', function(err, db) {
     app.tweets  = db.collection('tweets');
     app.following  = db.collection('following');
     app.followers  = db.collection('followers');
-/*    app.following.findOne({username:'KayteeeeGaga'},function(err, tweet) {
+/*    app.followers.findOne({username:'marmak1'},function(err, tweet) {
         if (err) return console.error(err);
         console.log(tweet);
     });*/

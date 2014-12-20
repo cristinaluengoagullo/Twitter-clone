@@ -52,8 +52,13 @@ $( "#validate" ).submit(function( event ) {
       window.location.replace(o.url);
   })
   .fail(function( h ) {
-  	var o = h.responseJSON;
-    $( "#message" ).empty().append( o.message );
+    $( 'input').val('');
+    if (username != '' && password != '') {
+        $( "#message" ).empty().append('ERROR: Wrong username or password').css('color', 'red');
+    }
+    else {
+        $( "#message" ).empty().append('ERROR: All fields must be filled').css('color', 'red');
+   }
   });
 });
 </script>

@@ -46,7 +46,7 @@ router.get('/', function(req, res) {
     function(user) {
         if (!user)
             return res.render('login', {
-                title: 'Hello - Please Login To Your Account' });
+                message: 'Hello - Please Login To Your Account' });
 
         req.session.user = user;
         res.redirect('/home');
@@ -91,9 +91,10 @@ router.post('/logout', function(req, res) {
 router.get('/usr/:username', function(req, res) {
     // TODO: render user req.params.username profile (profile.ejs)
     var resTweets = []
-    var rend = function(follow) {
+    var name = req.session.user.name;
+    var rend = function(follow, name) {
 	    render(res, {
-		title: 'Profile:',
+		title: name + '\'s Profile:',
 		partial: 'profile',
 		tweets: resTweets,
 		username: req.params.username,
@@ -108,18 +109,20 @@ router.get('/usr/:username', function(req, res) {
     });
 
     if (req.params.username != req.session.user.username) {
-	app.following.findOne({username: req.session.user.username}, function(err, user) {
-	    if (user != null && user.following.indexOf(req.params.username) >= 0){
-		rend(true);
-	    }
-	    else rend(false);
+	app.users.findOne({username: req.params.username}, function(err, u) {
+	    name = u.name;
+	    app.following.findOne({username: req.session.user.username}, function(err, user) {
+		if (user != null && user.following.indexOf(req.params.username) >= 0){
+		    rend(true,name);
+		}
+		else rend(false,name);
+	    });
 	});
     }
-    else rend(false);
+    else rend(false,name);
 });
 
 router.get('/usr/:username/following', function(req, res) {
-    // TODO: render users following user req.params.username
     app.following.findOne({username: req.params.username}, function(err, user) {
 	var userFollowing = [];
 	if (user != null){
@@ -134,7 +137,6 @@ router.get('/usr/:username/following', function(req, res) {
 });
 
 router.get('/usr/:username/followers', function(req, res) {
-    // TODO: render users followed by user req.params.username
     app.followers.findOne({username: req.params.username}, function(err, user) {
 	var userFollowers = [];
 	if (user != null){
@@ -153,12 +155,19 @@ router.get('/usr/:username/follow', function(req, res) {
 	/*var o = {message: "OK", arr:[req.params.username]}
         res.send(JSON.stringify(o));*/
     });
+    app.followers.update({username: req.params.username}, {$addToSet: {followers: req.session.user.username}}, function(err){
+	/*var o = {message: "OK", arr:[req.params.username]}
+        res.send(JSON.stringify(o));*/
+    });
     res.redirect('/usr/' + req.params.username);
 });
 
 router.get('/usr/:username/unfollow', function(req, res) {
-    console.log(req.params.username);
     app.following.update({username: req.session.user.username}, {$pull: {following: req.params.username}}, function(err){
+	/*var o = {message: "OK", arr:[req.params.username]}
+        res.send(JSON.stringify(o));*/
+    });
+    app.followers.update({username: req.params.username}, {$pull: {followers: req.session.user.username}}, function(err){
 	/*var o = {message: "OK", arr:[req.params.username]}
         res.send(JSON.stringify(o));*/
     });
@@ -186,7 +195,7 @@ router.get('/home', function(req, res) {
         });
    });
    render(res, {
-       title: 'Timeline:',
+       title: req.session.user.name + '\'s Timeline:',
        partial: 'home',
        tweets: resTweets
    });
