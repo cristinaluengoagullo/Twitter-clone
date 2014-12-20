@@ -101,7 +101,10 @@ router.get('/usr/:username', function(req, res) {
 		following: follow
 	    });
     }
-    app.tweets.find({username: req.params.username}).toArray(function(err, tweets) {
+    app.tweets.find({username: req.params.username})
+    .limit(10)
+    .sort({created_at: -1})
+    .toArray(function(err, tweets) {
          tweets = setDisplayDate(tweets);
          tweets.forEach(function(tweet) {
               resTweets.push(tweet);
@@ -187,7 +190,10 @@ router.get('/home', function(req, res) {
    var resTweets = [];
    app.following.findOne({username: req.session.user.username},function(err, user) {
         if (err) return console.error(err);
-        app.tweets.find({username: {$in: user.following}}).toArray(function(err, tweets) {
+        app.tweets.find({username: {$in: user.following}})
+        .limit(10)
+        .sort({created_at: -1})
+	.toArray(function(err, tweets) {
             tweets = setDisplayDate(tweets);
             tweets.forEach(function(tweet) {
                 resTweets.push(tweet);
@@ -209,14 +215,9 @@ router.post('/newTweet', function(req, res) {
         res.redirect('/');
         return;
     }
-    var currentdate = new Date(); 
-    var datetime = "Last Sync: " + currentdate.getDate() + "/"
-                + (currentdate.getMonth()+1)  + "/" 
-                + currentdate.getFullYear() + " @ "  
-                + currentdate.getHours() + ":"  
-                + currentdate.getMinutes() + ":" 
-                + currentdate.getSeconds();
-    var tweet = {"created at": datetime, "text": req.param('text'), "name": req.session.user.name, "username": req.session.user.username};
+    var now = new Date(); 
+    var now_utc = Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),  now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds());
+    var tweet = {"created_at": now, "text": req.param('text'), "name": req.session.user.name, "username": req.session.user.username};
     app.tweets.insert(tweet, {safe: true}, function(){
         var o = {message: "OK", arr:tweet}
         res.send(JSON.stringify(o));

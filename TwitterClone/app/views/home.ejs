@@ -21,18 +21,20 @@ $( "#newTweet" ).submit(function( event ) {
  
   // TODO: Implement Ajax request
   // Send the data using post
-  var posting = $.post( url, { text: text }); 
+  if (text != '') {
+      var posting = $.post( url, { text: text }); 
 
-  // Put the results in a div
-  posting.done(function( o ) {
-    $('textarea').val('');
-    confirm("Ribbit! Successful tweet!");
-    //window.location.replace(o.url);
-  })
-  .fail(function( h ) {
-  	var o = h.responseJSON;
-    $( "#message" ).empty().append( o.message );
-  });
+      // Put the results in a div
+      posting.done(function( o ) {
+      $('textarea').val('');
+      confirm("Ribbit! Successful tweet!");
+      //window.location.replace(o.url);
+      })
+      .fail(function( h ) {
+      var o = h.responseJSON;
+      $( "#message" ).empty().append( o.message );
+      });
+  }
 });
 </script>
 <div id="ribbits" class="panel left">
