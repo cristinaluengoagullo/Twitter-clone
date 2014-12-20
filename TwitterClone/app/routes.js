@@ -149,7 +149,6 @@ router.get('/usr/:username/followers', function(req, res) {
 });
 
 router.get('/usr/:username/follow', function(req, res) {
-    // TODO
     app.following.update({username: req.session.user.username}, {$addToSet: {following: req.params.username}}, function(err){
 	/*var o = {message: "OK", arr:[req.params.username]}
         res.send(JSON.stringify(o));*/
