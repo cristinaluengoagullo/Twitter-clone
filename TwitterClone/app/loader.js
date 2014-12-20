@@ -13,13 +13,13 @@ mongo.connect('mongodb://localhost:27017/twitter', function(err, db) {
   users  = db.collection('users');
   tweets  = db.collection('tweets');
   following = db.collection('following');
-  followees = db.collection('followees');
+  followers = db.collection('followers');
 
   // TODO: empty the database
   users.remove({}, noop);
   tweets.remove({}, noop);
   following.remove({}, noop);
-  followees.remove({}, noop);
+  followers.remove({}, noop);
 
   var semaphore = 2;
   function callback(err) {
@@ -48,7 +48,7 @@ mongo.connect('mongodb://localhost:27017/twitter', function(err, db) {
       // using db.close()
       var user = {"username": obj.username, "name": obj.name};
       var userFollowing = {"username": obj.username, "following": obj.following};
-      var userFollowees = {"username": obj.username, "followers": obj.followers};  
+      var userFollowers = {"username": obj.username, "followers": obj.followers};  
       AM.addNewAccount(user, users, function()
       {
         if (--lineCount === 0 && readAllLines) {
@@ -57,7 +57,7 @@ mongo.connect('mongodb://localhost:27017/twitter', function(err, db) {
       }
       });
       following.insert(userFollowing, {safe: true}, function(){});  
-      followees.insert(userFollowees, {safe: true}, function(){});  
+      followers.insert(userFollowers, {safe: true}, function(){});  
     } catch (err) {
       console.log("Error:", err);
     }
