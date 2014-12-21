@@ -108,18 +108,15 @@ router.get('/usr/:username', function(req, res) {
     .toArray(function(err, tweets) {
          tweets = setDisplayDate(tweets);
          tweets.forEach(function(tweet) {
-              resTweets.push(tweet);
+	     if (name != tweet.name) name = tweet.name;
+	     resTweets.push(tweet);
          });
     });
-
-    app.users.findOne({username: req.params.username}, function(err, u) {
-	name = u.name;
-	app.following.findOne({username: req.session.user.username}, function(err, user) {
-	    if (user != null && user.following.indexOf(req.params.username) >= 0){
-		rend(true,name);
-	    }
-	    else rend(false,name);
-	});
+    app.following.findOne({username: req.session.user.username}, function(err, user) {
+	if (user != null && user.following.indexOf(req.params.username) >= 0){
+	    rend(true,name);
+	}
+	else rend(false,name);
     });
 });
 
