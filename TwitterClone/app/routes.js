@@ -5,6 +5,7 @@ var ejs = require('ejs');
 var fs = require('fs');
 var AM = require('./account-manager.js');
 var router = express.Router();
+var kafka = require('kafka-node');
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -221,7 +222,18 @@ router.post('/newTweet', function(req, res) {
     app.tweets.insert(tweet, {safe: true}, function(){
         var o = {message: "OK", arr:tweet}
         res.send(JSON.stringify(o));
-    }); 
+    });
+
+    var client = new kafka.Client('localhost:2181');
+    app.producer = new kafka.Producer(client);
+
+    var payloads = [{ topic: 'tweets', messages: tweet.text, partition: 0 }];
+    app.producer.on('ready', function () {
+	app.producer.send(payloads, function (err, data) {
+            console.log(data);
+	});
+    });
+    app.producer.on('error', function (err) {});
 });
 
 ////////////////////////////////////////////////////////////////////////////////

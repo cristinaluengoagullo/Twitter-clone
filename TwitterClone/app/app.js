@@ -84,6 +84,7 @@ mongo.connect('mongodb://localhost:27017/twitter', function(err, db) {
     // TODO: error handling
     assert(!err);
     console.log("connected to MongoDB");
+    app.db = db;
     app.users  = db.collection('users');
     app.tweets  = db.collection('tweets');
     app.following  = db.collection('following');
@@ -91,9 +92,17 @@ mongo.connect('mongodb://localhost:27017/twitter', function(err, db) {
 /*    app.followers.findOne({username:'marmak1'},function(err, tweet) {
         if (err) return console.error(err);
         console.log(tweet);
-    });*/
-    // var client = new kafka.Client('localhost:2181');
-    // app.producer = new kafka.Producer(client);
+    });
+    var client = new kafka.Client('localhost:2181');
+    app.producer = new kafka.Producer(client);
+
+    var payloads = [{ topic: 'tweets', messages: , partition: 0 }];
+    app.producer.on('ready', function () {
+	app.producer.send(payloads, function (err, data) {
+            console.log(data);
+	});
+    });
+    app.producer.on('error', function (err) {});*/
 
     var server = app.listen(3000, function () {
         var host = server.address().address;
@@ -103,3 +112,4 @@ mongo.connect('mongodb://localhost:27017/twitter', function(err, db) {
 });
 
 ////////////////////////////////////////////////////////////////////////////////
+
