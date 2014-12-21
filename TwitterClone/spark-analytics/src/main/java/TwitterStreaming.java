@@ -27,7 +27,7 @@ public class TwitterStreaming {
     //String jarFile = "../streaming-1.0.jar";
 
     SparkConf conf = new SparkConf().setMaster(sparkUrl).setAppName("Streaming");
-    JavaStreamingContext ssc = new JavaStreamingContext(conf, new Duration(10000)); 
+    JavaStreamingContext ssc = new JavaStreamingContext(conf, new Duration(1000)); 
     HashMap<String, Integer> topics = new HashMap();
     topics.put("tweets", 1);
     JavaPairReceiverInputDStream messages = KafkaUtils.createStream(ssc, "localhost:2181", "1", topics);
@@ -74,7 +74,7 @@ public class TwitterStreaming {
         public Integer call(Integer i1, Integer i2) { return i1 - i2; }
       },
       new Duration(60 * 10 * 1000),
-      new Duration(1 * 10000)
+      new Duration(60 * 1000)
     );
 
    //Swap the key-value pairs for the counts (in order to sort hashtags by their counts)
