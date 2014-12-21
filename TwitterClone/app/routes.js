@@ -218,7 +218,7 @@ router.post('/newTweet', function(req, res) {
     }
     var now = new Date(); 
     var now_utc = Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),  now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds());
-    var tweet = {"created_at": now, "text": req.param('text'), "name": req.session.user.name, "username": req.session.user.username};
+    var tweet = {"created_at": now, "text": req.param('text'), "name": req.session.user.name, "username": req.session.user.username, "name": req.session.user.name};
     app.tweets.insert(tweet, {safe: true}, function(){
         var o = {message: "OK", arr:tweet}
         res.send(JSON.stringify(o));
