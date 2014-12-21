@@ -58,22 +58,18 @@ router.get('/', function(req, res) {
 // Login / Logout
 
 router.post('/validate', function(req, res) {
-    // TODO: Implement user login given req.param('username'), req.param('password')
     AM.manualLogin(
         req.param('username'),
         req.param('password'),
         app.users,
     function(err, user) {
-        //assert(!err);
         res.setHeader('content-type', 'application/json');
-
         if (!user) {
             res.statusCode = 403;
             var o = {message: err.message};
             res.send(JSON.stringify(o));
             return;
         }
-
         req.session.user = user;
         var fullUrl = req.protocol + '://' + req.get('host') + '/home';
         var o = {message: 'OK', url: fullUrl}
@@ -90,7 +86,6 @@ router.post('/logout', function(req, res) {
 // User Profile
 
 router.get('/usr/:username', function(req, res) {
-    // TODO: render user req.params.username profile (profile.ejs)
     var resTweets = []
     var name = req.session.user.name;
     var rend = function(follow, name) {
@@ -149,26 +144,54 @@ router.get('/usr/:username/followers', function(req, res) {
 });
 
 router.get('/usr/:username/follow', function(req, res) {
-    app.following.update({username: req.session.user.username}, {$addToSet: {following: req.params.username}}, function(err){
-	/*var o = {message: "OK", arr:[req.params.username]}
-        res.send(JSON.stringify(o));*/
+    if (req.session.user == null) {
+        // if user is not logged-in redirect back to login page
+        res.send(403);
+        return;
+    }
+    app.following.update({username: req.session.user.username}, {$addToSet: {following: req.params.username}}, function(err, records){
+	if (records == 0) {
+	    res.statusCode = 500;
+            var o = {message: err.message};
+            res.send(JSON.stringify(o));
+	    return;
+	}
     });
-    app.followers.update({username: req.params.username}, {$addToSet: {followers: req.session.user.username}}, function(err){
-	/*var o = {message: "OK", arr:[req.params.username]}
-        res.send(JSON.stringify(o));*/
+    app.followers.update({username: req.params.username}, {$addToSet: {followers: req.session.user.username}}, function(err, records){
+	if (records == 0) {
+	    res.statusCode = 500;
+            var o = {message: err.message};
+            res.send(JSON.stringify(o));
+	    return;
+	}
     });
+    res.statusCode = 200;
     res.redirect('/usr/' + req.params.username);
 });
 
 router.get('/usr/:username/unfollow', function(req, res) {
-    app.following.update({username: req.session.user.username}, {$pull: {following: req.params.username}}, function(err){
-	/*var o = {message: "OK", arr:[req.params.username]}
-        res.send(JSON.stringify(o));*/
+    if (req.session.user == null) {
+        // if user is not logged-in redirect back to login page
+        res.send(403);
+        return;
+    }
+    app.following.update({username: req.session.user.username}, {$pull: {following: req.params.username}}, function(err, records){
+	if (records == 0) {
+	    res.statusCode = 500;
+            var o = {message: err.message};
+            res.send(JSON.stringify(o));
+	    return;
+	}
     });
-    app.followers.update({username: req.params.username}, {$pull: {followers: req.session.user.username}}, function(err){
-	/*var o = {message: "OK", arr:[req.params.username]}
-        res.send(JSON.stringify(o));*/
+    app.followers.update({username: req.params.username}, {$pull: {followers: req.session.user.username}}, function(err, records){
+	if (records == 0) {
+	    res.statusCode = 500;
+            var o = {message: err.message};
+            res.send(JSON.stringify(o));
+	    return;
+	}
     });
+    res.statusCode = 200;
     res.redirect('/usr/' + req.params.username);
 });
 
@@ -181,7 +204,6 @@ router.get('/home', function(req, res) {
         res.redirect('/');
         return;
     }
-
    var resTweets = [];
    app.following.findOne({username: req.session.user.username},function(err, user) {
         if (err) return console.error(err);
@@ -207,14 +229,20 @@ router.get('/home', function(req, res) {
 router.post('/newTweet', function(req, res) {
     if (req.session.user == null) {
         // if user is not logged-in redirect back to login page
-        res.redirect('/');
+        res.send(403);
         return;
     }
     var now = new Date(); 
     var now_utc = Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),  now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds());
     var tweet = {"created_at": now, "text": req.param('text'), "name": req.session.user.name, "username": req.session.user.username, "name": req.session.user.name};
-    app.tweets.insert(tweet, {safe: true}, function(){
-        var o = {message: "OK", arr:tweet}
+    app.tweets.insert(tweet, {safe: true}, function(err, records){
+	if (!records) {
+	    res.statusCode = 500;
+            var o = {message: err.message};
+            res.send(JSON.stringify(o));
+	    return;
+	}
+        var o = {message: "OK"};
         res.send(JSON.stringify(o));
     });
 

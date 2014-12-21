@@ -34,7 +34,6 @@ mongo.connect('mongodb://localhost:27017/twitter', function(err, db) {
     try {
       lineCount++;
       var obj = JSON.parse(line);
-      //console.log(obj.username);
       // NOTE: obj represents a user and contains three fields:
       // obj.username: the username
       // obj.name: the full name
@@ -71,7 +70,6 @@ mongo.connect('mongodb://localhost:27017/twitter', function(err, db) {
     try {
       lineCount++;
       var obj = JSON.parse(line);
-      //console.log(obj);
       // NOTE: obj represents a tweet and contains three fields:
       // obj.created_at: UTC time when this tweet was created
       // obj.text: The actual UTF-8 text of the tweet
