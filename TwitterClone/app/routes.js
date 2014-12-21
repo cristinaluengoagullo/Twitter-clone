@@ -112,18 +112,15 @@ router.get('/usr/:username', function(req, res) {
          });
     });
 
-    if (req.params.username != req.session.user.username) {
-	app.users.findOne({username: req.params.username}, function(err, u) {
-	    name = u.name;
-	    app.following.findOne({username: req.session.user.username}, function(err, user) {
-		if (user != null && user.following.indexOf(req.params.username) >= 0){
-		    rend(true,name);
-		}
-		else rend(false,name);
-	    });
+    app.users.findOne({username: req.params.username}, function(err, u) {
+	name = u.name;
+	app.following.findOne({username: req.session.user.username}, function(err, user) {
+	    if (user != null && user.following.indexOf(req.params.username) >= 0){
+		rend(true,name);
+	    }
+	    else rend(false,name);
 	});
-    }
-    else rend(false,name);
+    });
 });
 
 router.get('/usr/:username/following', function(req, res) {
