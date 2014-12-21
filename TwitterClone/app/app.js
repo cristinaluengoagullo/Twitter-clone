@@ -104,6 +104,27 @@ mongo.connect('mongodb://localhost:27017/twitter', function(err, db) {
     });
     app.producer.on('error', function (err) {});*/
 
+    //Drop any previously-set indexes
+    db.collection('users').dropAllIndexes(function() {})
+    db.ensureIndex("users", {username:1}, function(err, indexname) {
+      assert.equal(null, err);
+    });
+
+    db.collection('tweets').dropAllIndexes(function() {})
+    db.ensureIndex("tweets", {username:1}, function(err, indexname) {
+      assert.equal(null, err);
+    });
+
+    db.collection('following').dropAllIndexes(function() {})
+    db.ensureIndex("following", {username:1}, function(err, indexname) {
+      assert.equal(null, err);
+    });
+
+    db.collection('followers').dropAllIndexes(function() {})
+    db.ensureIndex("users", {username:1}, function(err, indexname) {
+      assert.equal(null, err);
+    });
+
     var server = app.listen(3000, function () {
         var host = server.address().address;
         var port = server.address().port;
