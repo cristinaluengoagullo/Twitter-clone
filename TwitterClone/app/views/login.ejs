@@ -54,9 +54,11 @@ $( "#validate" ).submit(function( event ) {
   .fail(function( h ) {
     $( 'input').val('');
     if (username != '' && password != '') {
+        // Show error message specifying the cause of error (wrong username or password)
         $( "#message" ).empty().append('ERROR: Wrong username or password').css('color', 'red');
     }
     else {
+        // Show error message specifying the cause of error (either username or password, or both are empty)
         $( "#message" ).empty().append('ERROR: All fields must be filled').css('color', 'red');
    }
   });

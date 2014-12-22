@@ -5,17 +5,24 @@ var assert = require('assert');
 var AM = require('./account-manager.js');
 var noop = function() {};
 
+// Connection to the database
 mongo.connect('mongodb://localhost:27017/twitter', function(err, db) {
 
   assert.equal(null, err);
   var lineCount     = 0;
   var readAllLines  = false;
+
+  // Database collections:
+  // users: information about the users (username, name, password)
+  // tweets: information about the tweets (text, created_at, username, name)
+  // following: information about follow relationship (username, following)
+  // followers: information about followee relationship (username, followers)  
   users  = db.collection('users');
   tweets  = db.collection('tweets');
   following = db.collection('following');
   followers = db.collection('followers');
 
-  // TODO: empty the database
+  // Empty the database
   users.remove({}, noop);
   tweets.remove({}, noop);
   following.remove({}, noop);
@@ -28,6 +35,7 @@ mongo.connect('mongodb://localhost:27017/twitter', function(err, db) {
         readAllLines = true;
   }
 
+  // Read users information
   var u = byline(fs.createReadStream(__dirname + '/users.json'));
 
   u.on('data', function(line) {
@@ -40,11 +48,7 @@ mongo.connect('mongodb://localhost:27017/twitter', function(err, db) {
       // obj.followers: array of users following this user
       // obj.following: array of followed users
 
-      // TODO: load the user into the database
-      // (including the information of which users this user is following)
-      // decrement the lineCount variable after every insertion
-      // if lineCount is equal to zero and readAllLines is true, close db connection
-      // using db.close()
+      // Load information about use and follow relationships into the database
       var user = {"username": obj.username, "name": obj.name};
       var userFollowing = {"username": obj.username, "following": obj.following};
       var userFollowers = {"username": obj.username, "followers": obj.followers};  
@@ -64,6 +68,7 @@ mongo.connect('mongodb://localhost:27017/twitter', function(err, db) {
 
   u.on('end', callback);
 
+  // Read tweets information
   var t = byline(fs.createReadStream(__dirname + '/sample.json'));
 
   t.on('data', function(line) {
@@ -75,10 +80,7 @@ mongo.connect('mongodb://localhost:27017/twitter', function(err, db) {
       // obj.text: The actual UTF-8 text of the tweet
       // obj.username: The user who posted this tweet
 
-      // TODO: load the tweet into the database
-      // decrement the lineCount variable after every insertion
-      // if lineCount is equal to zero and readAllLines is true, close db connection
-      // using db.close()  
+      // Load tweet into the database
       tweets.insert(obj, {safe: true}, function()
       {
         if (--lineCount === 0 && readAllLines) {

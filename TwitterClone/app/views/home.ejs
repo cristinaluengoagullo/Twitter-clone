@@ -19,20 +19,22 @@ $( "#newTweet" ).submit(function( event ) {
     text = $form.find( "textarea[name='text']" ).val(),
     url = $form.attr( "action" );
  
-  // TODO: Implement Ajax request
+  // Ajax request
   // Send the data using post
   if (text != '') {
       var posting = $.post( url, { text: text }); 
 
       // Put the results in a div
       posting.done(function( o ) {
-      $('textarea').val('');
-      confirm("Ribbit! Successful tweet!");
-      //window.location.replace(o.url);
+          // Empty textarea field
+          $('textarea').val('');
+	  // Visual confirmation for the user
+          confirm("Ribbit! Successful tweet!");
       })
       .fail(function( h ) {
-      var o = h.responseJSON;
-      $( "#message" ).empty().append( o.message );
+          // In case of failure, show error message
+          var o = h.responseJSON;
+          $( "#message" ).empty().append( o.message );
       });
   }
 });
