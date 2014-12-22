@@ -108,10 +108,12 @@ router.get('/usr/:username', function(req, res) {
          });
     });
     app.following.findOne({username: req.session.user.username}, function(err, user) {
-	if (user != null && user.following.indexOf(req.params.username) >= 0){
-	    rend(true,name);
+	if (user != null) {
+	    if(user.following.indexOf(req.params.username) >= 0){
+		rend(true,name);
+	    }
+	    else rend(false,name);
 	}
-	else rend(false,name);
     });
 });
 
@@ -234,7 +236,7 @@ router.post('/newTweet', function(req, res) {
     }
     var now = new Date(); 
     var now_utc = Date(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),  now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds());
-    var tweet = {"created_at": now, "text": req.param('text'), "name": req.session.user.name, "username": req.session.user.username, "name": req.session.user.name};
+    var tweet = {"created_at": now, "text": req.param('text'), "username": req.session.user.username, "name": req.session.user.name};
     app.tweets.insert(tweet, {safe: true}, function(err, records){
 	if (!records) {
 	    res.statusCode = 500;
