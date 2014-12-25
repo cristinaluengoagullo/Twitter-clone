@@ -85,26 +85,14 @@ mongo.connect('mongodb://localhost:27017/twitter', function(err, db) {
     assert(!err);
     console.log("connected to MongoDB");
     app.db = db;
+    // Assignment of collections to app variables.
     app.users  = db.collection('users');
     app.tweets  = db.collection('tweets');
     app.following  = db.collection('following');
     app.followers  = db.collection('followers');
-/*    app.followers.findOne({username:'marmak1'},function(err, tweet) {
-        if (err) return console.error(err);
-        console.log(tweet);
-    });
-    var client = new kafka.Client('localhost:2181');
-    app.producer = new kafka.Producer(client);
 
-    var payloads = [{ topic: 'tweets', messages: , partition: 0 }];
-    app.producer.on('ready', function () {
-	app.producer.send(payloads, function (err, data) {
-            console.log(data);
-	});
-    });
-    app.producer.on('error', function (err) {});*/
-
-    //Drop any previously-set indexes
+    //Indexes on collections based on the username field to consult less documents in each query.
+    // Since all queries are performed on the username, it can be a suited index for the collections.
     db.collection('users').dropAllIndexes(function() {})
     db.ensureIndex("users", {username:1}, function(err, indexname) {
       assert.equal(null, err);

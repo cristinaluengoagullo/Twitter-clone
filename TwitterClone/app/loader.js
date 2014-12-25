@@ -36,7 +36,7 @@ mongo.connect('mongodb://localhost:27017/twitter', function(err, db) {
   }
 
   // Read users information
-  var u = byline(fs.createReadStream(__dirname + '/users.json'));
+  var u = byline(fs.createReadStream(__dirname + process.argv[2]));
 
   u.on('data', function(line) {
     try {
@@ -69,7 +69,7 @@ mongo.connect('mongodb://localhost:27017/twitter', function(err, db) {
   u.on('end', callback);
 
   // Read tweets information
-  var t = byline(fs.createReadStream(__dirname + '/sample.json'));
+  var t = byline(fs.createReadStream(__dirname + process.argv[3]));
 
   t.on('data', function(line) {
     try {

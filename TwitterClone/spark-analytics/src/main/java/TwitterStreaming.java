@@ -30,9 +30,10 @@ public class TwitterStreaming {
     JavaStreamingContext ssc = new JavaStreamingContext(conf, new Duration(1000)); 
     HashMap<String, Integer> topics = new HashMap();
     topics.put("tweets", 1);
+    // Create Kafka stream to get the tweets
     JavaPairReceiverInputDStream messages = KafkaUtils.createStream(ssc, "localhost:2181", "1", topics);
 
-
+    // Get lines of message
     JavaDStream<String> lines = messages.map(new Function<Tuple2<String, String>, String>() {
       @Override
       public String call(Tuple2<String, String> tuple2) {
@@ -40,6 +41,7 @@ public class TwitterStreaming {
       }
     });
 
+    // Separate the words
     JavaDStream<String> words = lines.flatMap(
       new FlatMapFunction<String, String>() {
         public Iterable<String> call(String in) {
